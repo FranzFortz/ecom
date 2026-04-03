@@ -1,6 +1,9 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Header } from "@/shared/components/layout/Header";
+import { Footer } from "@/shared/components/layout/Footer";
+import { Providers } from "@/app/providers";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -15,8 +18,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "E-Commerce Store",
-  description: "Student e-commerce storefront",
+  title: "BayanMart — Shop online",
+  description: "Philippines-friendly e-commerce demo — GCash, cash, and card on delivery.",
 };
 
 export default function RootLayout({
@@ -27,9 +30,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans antialiased`}
       >
-        {children}
+        <Providers>
+          <Header />
+          <div className="flex-1">{children}</div>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
