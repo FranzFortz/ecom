@@ -7,3 +7,10 @@ export type ProductVariants = {
   size?: string[];
   color?: string[];
 };
+
+/** Storefront category chip (DB slug + display). */
+export type CatalogCategoryItem = {
+  slug: string;
+  name: string;
+  emoji: string;
+};

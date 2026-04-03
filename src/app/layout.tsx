@@ -18,8 +18,12 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXTAUTH_URL ?? "http://localhost:3000"
+  ),
   title: "BayanMart — Shop online",
-  description: "Philippines-friendly e-commerce demo — GCash, cash, and card on delivery.",
+  description:
+    "Philippines-friendly e-commerce demo — GCash, cash, and card on delivery.",
 };
 
 export default function RootLayout({

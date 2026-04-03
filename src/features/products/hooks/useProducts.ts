@@ -1,6 +1,11 @@
 // src/features/products/hooks/useProducts.ts
-import { createSupabaseServerClient } from "@/shared/lib/supabase";
+import {
+  CATEGORY_EMOJI_BY_SLUG,
+  getStaticCatalogCategories,
+} from "@/features/products/constants";
+import type { CatalogCategoryItem } from "@/features/products/types";
 import type { Product } from "@/features/products/types";
+import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 
 function hasSupabaseEnv(): boolean {
   return !!(
@@ -26,6 +31,58 @@ function mapRow(row: Record<string, unknown>): Product {
     is_featured: Boolean(row.is_featured),
     created_at: row.created_at as string,
   };
+}
+
+function emojiForSlug(slug: string): string {
+  return CATEGORY_EMOJI_BY_SLUG[slug] ?? "🛒";
+}
+
+/**
+ * PRD: `categories` table is source of truth; fallback to distinct `products.category`,
+ * then static seed-aligned list when DB is empty.
+ */
+export async function getCatalogCategories(): Promise<CatalogCategoryItem[]> {
+  if (!hasSupabaseEnv()) {
+    return getStaticCatalogCategories();
+  }
+
+  const supabase = createSupabaseServerClient();
+
+  const { data: catRows, error: catErr } = await supabase
+    .from("categories")
+    .select("name, slug")
+    .order("name", { ascending: true });
+
+  if (!catErr && catRows && catRows.length > 0) {
+    return catRows.map((row) => ({
+      slug: row.slug as string,
+      name: row.name as string,
+      emoji: emojiForSlug(row.slug as string),
+    }));
+  }
+
+  const { data: productRows, error: prodErr } = await supabase
+    .from("products")
+    .select("category");
+
+  if (!prodErr && productRows && productRows.length > 0) {
+    const slugs = Array.from(
+      new Set(
+        productRows
+          .map((r) => r.category as string | null)
+          .filter((c): c is string => Boolean(c))
+      )
+    ).sort();
+    if (slugs.length > 0) {
+      return slugs.map((slug) => ({
+        slug,
+        name: slug.charAt(0).toUpperCase() + slug.slice(1),
+        emoji: emojiForSlug(slug),
+      }));
+    }
+  }
+
+  return getStaticCatalogCategories();
 }
 
 export async function getProducts(options?: {

@@ -35,6 +35,16 @@ export function Footer() {
                 FAQ
               </Link>
             </li>
+            <li>
+              <Link href="/strategy" className="hover:text-emerald-800">
+                Strategy
+              </Link>
+            </li>
+            <li>
+              <Link href="/analytics" className="hover:text-emerald-800">
+                Analytics
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
