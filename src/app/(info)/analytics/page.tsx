@@ -1,5 +1,6 @@
 // src/app/(info)/analytics/page.tsx
 import { Card } from "@/shared/components/ui/Card";
+import { SITE_NAME } from "@/shared/lib/site";
 
 const kpis = [
   {
@@ -29,7 +30,8 @@ export default function AnalyticsPage() {
     <main className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="text-3xl font-bold text-stone-900">Analytics & KPIs</h1>
       <p className="mt-2 text-sm text-stone-600">
-        Static mock dashboard for coursework — numbers are not live data.
+        {SITE_NAME} — static mock dashboard for coursework; numbers are not live
+        data.
       </p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {kpis.map((k) => (

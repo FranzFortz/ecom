@@ -1,8 +1,13 @@
 // src/app/(info)/returns/page.tsx
+import { SITE_NAME } from "@/shared/lib/site";
+
 export default function ReturnsPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-3xl font-bold text-stone-900">Returns & refunds</h1>
+      <p className="mt-2 text-sm text-stone-600">
+        Policy summary for {SITE_NAME} (student demo).
+      </p>
       <div className="mt-6 max-w-none text-sm text-stone-700">
         <h2 className="text-lg font-semibold text-stone-900">How to return</h2>
         <ol className="mt-2 list-decimal space-y-2 pl-5">
@@ -21,7 +26,8 @@ export default function ReturnsPage() {
         <p className="mt-2">
           Refunds for approved returns go to the original payment path where
           possible (e.g. GCash reversal coordination). Cash-on-delivery refunds
-          may be issued via store credit or bank transfer for this demo store.
+          may be issued via store credit or bank transfer for this {SITE_NAME}{" "}
+          demo.
         </p>
       </div>
     </main>

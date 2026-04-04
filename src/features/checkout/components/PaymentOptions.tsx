@@ -20,8 +20,9 @@ export function PaymentOptions({
         Payment method
       </legend>
       <p className="text-xs text-stone-500">
-        Philippines: GCash, cash on delivery, or card on delivery (no online
-        card capture in this demo).
+        Mock checkout — no real payment yet. Your choice is saved on the order for
+        fulfillment: GCash, cash on delivery, or card on delivery (no online card
+        capture).
       </p>
       <div className="flex flex-col gap-2">
         {OPTIONS.map((m) => (

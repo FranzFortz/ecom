@@ -4,6 +4,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
+import { SITE_NAME } from "@/shared/lib/site";
 
 export default function GlobalError({
   error,
@@ -21,7 +22,7 @@ export default function GlobalError({
       <p className="text-sm font-medium text-red-600">Something went wrong</p>
       <h1 className="mt-2 text-2xl font-bold text-stone-900">Unexpected error</h1>
       <p className="mt-2 text-sm text-stone-600">
-        Please try again or return to the storefront.
+        Please try again or return to {SITE_NAME}.
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <button

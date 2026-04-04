@@ -5,7 +5,11 @@ import {
 } from "@/features/products/constants";
 import type { CatalogCategoryItem } from "@/features/products/types";
 import type { Product } from "@/features/products/types";
-import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
+import {
+  fetchProductRowsPaginated,
+  fetchProductSlugsPaginated,
+} from "@/shared/lib/supabase/products-paginated";
+import { createSupabaseAnonClient } from "@/shared/lib/supabase/public";
 
 function hasSupabaseEnv(): boolean {
   return !!(
@@ -14,7 +18,7 @@ function hasSupabaseEnv(): boolean {
   );
 }
 
-function mapRow(row: Record<string, unknown>): Product {
+export function mapProductRow(row: Record<string, unknown>): Product {
   return {
     id: row.id as string,
     name: row.name as string,
@@ -46,7 +50,7 @@ export async function getCatalogCategories(): Promise<CatalogCategoryItem[]> {
     return getStaticCatalogCategories();
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseAnonClient();
 
   const { data: catRows, error: catErr } = await supabase
     .from("categories")
@@ -90,49 +94,40 @@ export async function getProducts(options?: {
   search?: string;
 }): Promise<Product[]> {
   if (!hasSupabaseEnv()) return [];
-  const supabase = createSupabaseServerClient();
-  let q = supabase.from("products").select("*").order("created_at", {
-    ascending: false,
-  });
-  if (options?.category) {
-    q = q.eq("category", options.category);
-  }
-  if (options?.search?.trim()) {
-    q = q.ilike("name", `%${options.search.trim()}%`);
-  }
-  const { data, error } = await q;
-  if (error || !data) return [];
-  return data.map((row) => mapRow(row as Record<string, unknown>));
+  const supabase = createSupabaseAnonClient();
+  const { rows, error } = await fetchProductRowsPaginated(supabase, options);
+  if (error) return [];
+  return rows.map((row) => mapProductRow(row));
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   if (!hasSupabaseEnv()) return null;
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseAnonClient();
   const { data, error } = await supabase
     .from("products")
     .select("*")
     .eq("slug", slug)
     .maybeSingle();
   if (error || !data) return null;
-  return mapRow(data as Record<string, unknown>);
+  return mapProductRow(data as Record<string, unknown>);
 }
 
 export async function getFeaturedProducts(): Promise<Product[]> {
   if (!hasSupabaseEnv()) return [];
-  const supabase = createSupabaseServerClient();
+  const supabase = createSupabaseAnonClient();
   const { data, error } = await supabase
     .from("products")
     .select("*")
     .eq("is_featured", true)
     .limit(8);
   if (error || !data) return [];
-  return data.map((row) => mapRow(row as Record<string, unknown>));
+  return data.map((row) => mapProductRow(row as Record<string, unknown>));
 }
 
 export async function getAllProductSlugs(): Promise<string[]> {
   if (!hasSupabaseEnv()) return [];
-  const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase.from("products").select("slug");
-  if (error || !data) return [];
-  return data.map((r) => r.slug as string);
+  const supabase = createSupabaseAnonClient();
+  const { slugs, error } = await fetchProductSlugsPaginated(supabase);
+  if (error) return [];
+  return slugs;
 }

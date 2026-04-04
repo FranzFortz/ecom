@@ -1,5 +1,4 @@
-// src/features/account/hooks/useWishlist.ts
-import { createSupabaseServiceClient } from "@/shared/lib/supabase/service";
+import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 import type { ProductRow } from "@/shared/types";
 
 export type WishlistLine = {
@@ -13,7 +12,7 @@ export async function fetchWishlistForUser(
   userId: string
 ): Promise<WishlistLine[]> {
   try {
-    const supabase = createSupabaseServiceClient();
+    const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
       .from("wishlist")
       .select("id, product_id, created_at, products (*)")

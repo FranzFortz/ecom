@@ -1,41 +1,52 @@
-// src/app/api/orders/[id]/route.ts
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { createSupabaseServiceClient } from "@/shared/lib/supabase/service";
+import { isAdminEmail } from "@/shared/lib/admin";
+import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 
-export async function GET(
+/** Customer deletes their own order (RLS orders_delete_own). */
+export async function DELETE(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const id = params.id;
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
 
-  try {
-    const supabase = createSupabaseServiceClient();
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", session.user.id)
-      .maybeSingle();
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    if (!data) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(data);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  if (user.email && isAdminEmail(user.email)) {
+    return NextResponse.json(
+      { error: "Admins remove orders from Admin → Orders." },
+      { status: 403 }
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("orders")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  if (!data) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/account/orders");
+  revalidatePath("/admin");
+  revalidatePath("/admin/orders");
+
+  return NextResponse.json({ ok: true });
 }

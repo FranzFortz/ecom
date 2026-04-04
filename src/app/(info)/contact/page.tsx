@@ -1,12 +1,14 @@
 // src/app/(info)/contact/page.tsx
 import { ContactForm } from "@/features/info/components/ContactForm";
+import { SITE_NAME } from "@/shared/lib/site";
 
 export default function ContactPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="text-3xl font-bold text-stone-900">Contact</h1>
       <p className="mt-2 text-sm text-stone-600">
-        Questions about orders, returns, or partnerships? Reach out below.
+        Questions for {SITE_NAME} about orders, returns, or partnerships? Reach
+        out below.
       </p>
       <div className="mt-8 grid gap-10 lg:grid-cols-2">
         <div>
@@ -14,10 +16,10 @@ export default function ContactPage() {
           <p className="mt-3 text-sm text-stone-700">
             Email:{" "}
             <a
-              href="mailto:hello@bayanmart.demo"
+              href="mailto:hello@mzonegadgets.demo"
               className="text-emerald-800 hover:underline"
             >
-              hello@bayanmart.demo
+              hello@mzonegadgets.demo
             </a>
           </p>
           <p className="mt-2 text-sm text-stone-700">

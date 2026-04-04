@@ -1,5 +1,9 @@
 // src/shared/types/index.ts
+import type { OrderStatus } from "@/shared/constants/order-status";
+
 export type PaymentMethod = "gcash" | "cash" | "card";
+
+export type { OrderStatus };
 
 export type Json =
   | string
@@ -43,7 +47,7 @@ export type ProfileRow = {
 export type OrderRow = {
   id: string;
   user_id: string | null;
-  status: string;
+  status: OrderStatus | string;
   total: number;
   shipping_info: Json;
   items: Json;
@@ -60,3 +64,24 @@ export type WishlistRow = {
 
 /** Alias matching PRD / master prompt naming. */
 export type WishlistItem = WishlistRow;
+
+export type CustomerNotificationRow = {
+  id: string;
+  user_id: string;
+  kind: string;
+  title: string;
+  body: string | null;
+  payload: Json;
+  read_at: string | null;
+  created_at: string;
+};
+
+export type AdminNotificationRow = {
+  id: string;
+  kind: string;
+  title: string;
+  body: string | null;
+  payload: Json;
+  read_at: string | null;
+  created_at: string;
+};

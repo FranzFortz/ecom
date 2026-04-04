@@ -1,5 +1,6 @@
 // src/app/(info)/faq/page.tsx
 import { Accordion } from "@/shared/components/ui/Accordion";
+import { SITE_NAME } from "@/shared/lib/site";
 
 const items = [
   {
@@ -57,7 +58,7 @@ export default function FaqPage() {
     <main className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-3xl font-bold text-stone-900">FAQ</h1>
       <p className="mt-2 text-sm text-stone-600">
-        Shipping, returns, payments, and account questions.
+        Shipping, returns, payments, and account questions for {SITE_NAME}.
       </p>
       <div className="mt-8">
         <Accordion items={items} />

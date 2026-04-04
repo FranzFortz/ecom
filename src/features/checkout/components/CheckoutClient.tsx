@@ -1,9 +1,9 @@
 // src/features/checkout/components/CheckoutClient.tsx
 "use client";
 
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
+import { useSupabaseAuth } from "@/features/auth/context/SupabaseAuthContext";
 import { CheckoutForm } from "@/features/checkout/components/CheckoutForm";
 import { OrderSummary } from "@/features/checkout/components/OrderSummary";
 import { PaymentOptions } from "@/features/checkout/components/PaymentOptions";
@@ -17,7 +17,7 @@ export function CheckoutClient({
 }: {
   shippingDefaults?: Partial<ShippingFormValues>;
 }) {
-  const { data: session } = useSession();
+  const { user } = useSupabaseAuth();
   const { placeOrder, loading, error, items } = useCheckout();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("gcash");
 
@@ -45,7 +45,7 @@ export function CheckoutClient({
     <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
       <div className="space-y-8">
         <CheckoutForm
-          defaultEmail={session?.user?.email}
+          defaultEmail={user?.email}
           shippingDefaults={shippingDefaults}
           onSubmit={onSubmit}
           isSubmitting={loading}

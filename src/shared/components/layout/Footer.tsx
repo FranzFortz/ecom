@@ -1,50 +1,29 @@
 // src/shared/components/layout/Footer.tsx
 import Link from "next/link";
+import { SITE_NAME } from "@/shared/lib/site";
+import { STORE_NAV_LINKS } from "@/shared/lib/store-nav";
 
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-stone-200 bg-stone-50">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
         <div>
-          <p className="text-lg font-semibold text-emerald-900">BayanMart</p>
+          <p className="text-lg font-semibold text-emerald-900">{SITE_NAME}</p>
           <p className="mt-2 text-sm text-stone-600">
-            Quality goods for homes across the Philippines. Free shipping on
-            eligible orders nationwide.
+            Phones, tablets, and tech — shipped nationwide across the Philippines.
+            Free shipping on eligible orders (demo).
           </p>
         </div>
         <div>
           <p className="text-sm font-semibold text-stone-900">Explore</p>
           <ul className="mt-3 flex flex-col gap-2 text-sm text-stone-600">
-            <li>
-              <Link href="/products" className="hover:text-emerald-800">
-                Shop
-              </Link>
-            </li>
-            <li>
-              <Link href="/about" className="hover:text-emerald-800">
-                About
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact" className="hover:text-emerald-800">
-                Contact
-              </Link>
-            </li>
-            <li>
-              <Link href="/faq" className="hover:text-emerald-800">
-                FAQ
-              </Link>
-            </li>
-            <li>
-              <Link href="/strategy" className="hover:text-emerald-800">
-                Strategy
-              </Link>
-            </li>
-            <li>
-              <Link href="/analytics" className="hover:text-emerald-800">
-                Analytics
-              </Link>
-            </li>
+            {STORE_NAV_LINKS.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="hover:text-emerald-800">
+                  {l.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
         <div>
@@ -79,7 +58,9 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-stone-200 py-4 text-center text-xs text-stone-500">
-        <p>© {new Date().getFullYear()} BayanMart. Student demo store.</p>
+        <p>
+          © {new Date().getFullYear()} {SITE_NAME}. Student demo store.
+        </p>
         <p className="mt-1 flex justify-center gap-4">
           <span aria-hidden>🔒</span>
           <span>Secure checkout · GCash · Cash · Card on delivery</span>

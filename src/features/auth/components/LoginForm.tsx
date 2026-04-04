@@ -4,9 +4,11 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { signIn } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
+import { resolvePostAuthLandingPath } from "@/features/auth/lib/admin-session-client";
+import { createSupabaseBrowserClient } from "@/shared/lib/supabase/browser";
+import { SITE_NAME } from "@/shared/lib/site";
 
 export function LoginForm() {
   const router = useRouter();
@@ -22,16 +24,23 @@ export function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const res = await signIn("credentials", {
+      const supabase = createSupabaseBrowserClient();
+      const { error: signErr } = await supabase.auth.signInWithPassword({
         email,
         password,
-        redirect: false,
       });
-      if (res?.error) {
+      if (signErr) {
         setError("Invalid email or password.");
         return;
       }
-      router.push(callbackUrl.startsWith("/") ? callbackUrl : "/account");
+
+      const raw =
+        callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
+          ? callbackUrl
+          : "/account";
+      const next = await resolvePostAuthLandingPath(raw);
+
+      router.push(next);
       router.refresh();
     } finally {
       setLoading(false);
@@ -44,6 +53,7 @@ export function LoginForm() {
       className="mx-auto flex max-w-md flex-col gap-4 rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
     >
       <h1 className="text-xl font-semibold text-stone-900">Log in</h1>
+      <p className="text-sm text-stone-600">{SITE_NAME}</p>
       <Input
         label="Email"
         name="email"

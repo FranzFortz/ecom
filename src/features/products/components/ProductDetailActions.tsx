@@ -1,8 +1,8 @@
 // src/features/products/components/ProductDetailActions.tsx
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
+import { useSupabaseAuth } from "@/features/auth/context/SupabaseAuthContext";
 import { useCart } from "@/features/cart/context/CartContext";
 import type { Product, ProductVariants } from "@/features/products/types";
 import { ProductVariantSelector } from "@/features/products/components/ProductVariantSelector";
@@ -16,7 +16,7 @@ export function ProductDetailActions({
   imageUrl: string;
 }) {
   const { addItem } = useCart();
-  const { data: session } = useSession();
+  const { user } = useSupabaseAuth();
   const [quantity, setQuantity] = useState(1);
   const [variant, setVariant] = useState<{ size?: string; color?: string }>({});
   const [toast, setToast] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export function ProductDetailActions({
   };
 
   const handleWishlist = async () => {
-    if (!session?.user) return;
+    if (!user) return;
     try {
       const res = await fetch("/api/wishlist", {
         method: "POST",
@@ -112,8 +112,8 @@ export function ProductDetailActions({
         <Button
           type="button"
           variant="secondary"
-          disabled={!session?.user}
-          title={session?.user ? undefined : "Log in to save items"}
+          disabled={!user}
+          title={user ? undefined : "Log in to save items"}
           onClick={() => void handleWishlist()}
         >
           Add to wishlist

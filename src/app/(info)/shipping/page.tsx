@@ -1,12 +1,14 @@
 // src/app/(info)/shipping/page.tsx
 import { Card } from "@/shared/components/ui/Card";
+import { SITE_NAME } from "@/shared/lib/site";
 
 export default function ShippingPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-3xl font-bold text-stone-900">Shipping</h1>
       <p className="mt-2 text-stone-600">
-        How we get orders from our partners to your door across the Philippines.
+        How {SITE_NAME} gets orders from our partners to your door across the
+        Philippines.
       </p>
       <div className="mt-8 space-y-6">
         <Card>

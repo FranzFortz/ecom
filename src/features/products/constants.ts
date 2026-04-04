@@ -3,18 +3,15 @@ import type { CatalogCategoryItem } from "@/features/products/types";
 
 /**
  * Default categories — must match `supabase/seed.sql` (`categories` + `products.category`).
+ * Gadgets-only catalog.
  */
 export const SHOP_CATEGORIES = [
-  { slug: "clothing", label: "Clothing", emoji: "👕" },
-  { slug: "electronics", label: "Electronics", emoji: "📱" },
-  { slug: "home", label: "Home", emoji: "🏠" },
+  { slug: "gadgets", label: "Gadgets", emoji: "📱" },
 ] as const;
 
-/** Emoji per category slug when `categories` rows have no icon column (PRD has no icon field). */
+/** Emoji per category slug when `categories` rows have no icon column. */
 export const CATEGORY_EMOJI_BY_SLUG: Record<string, string> = {
-  clothing: "👕",
-  electronics: "📱",
-  home: "🏠",
+  gadgets: "📱",
 };
 
 export function getStaticCatalogCategories(): CatalogCategoryItem[] {

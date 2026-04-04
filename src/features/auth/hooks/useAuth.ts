@@ -1,2 +1,2 @@
-// src/features/auth/hooks/useAuth.ts
-export { signIn, signOut, useSession } from "next-auth/react";
+// Re-export Supabase auth for feature code; prefer useSupabaseAuth in new code.
+export { useSupabaseAuth as useAuth } from "@/features/auth/context/SupabaseAuthContext";

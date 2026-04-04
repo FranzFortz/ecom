@@ -1,7 +1,10 @@
 // src/app/api/orders/route.ts
+// Mock checkout: persists payment_method only; no payment gateway.
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { createSupabaseServiceClient } from "@/shared/lib/supabase/service";
+import { isAdminEmail } from "@/shared/lib/admin";
+import { notifyAfterOrderPlaced } from "@/shared/lib/notifications-server";
+import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 import type { PaymentMethod } from "@/shared/types";
 import type { CartItem } from "@/features/cart/types";
 import type { ShippingFormValues } from "@/features/checkout/types";
@@ -13,9 +16,18 @@ function isPaymentMethod(x: unknown): x is PaymentMethod {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (user.email && isAdminEmail(user.email)) {
+    return NextResponse.json(
+      { error: "Admins cannot place storefront orders. Use the control center." },
+      { status: 403 }
+    );
   }
 
   let body: unknown;
@@ -65,31 +77,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Total mismatch" }, { status: 400 });
   }
 
-  try {
-    const supabase = createSupabaseServiceClient();
-    const { data, error } = await supabase
-      .from("orders")
-      .insert({
-        user_id: session.user.id,
-        status: "pending",
-        total,
-        shipping_info: shipping as unknown as Record<string, unknown>,
-        items: items as unknown as Record<string, unknown>,
-        payment_method: paymentMethod,
-      })
-      .select("id")
-      .single();
+  const { data, error } = await supabase
+    .from("orders")
+    .insert({
+      user_id: user.id,
+      status: "pending",
+      total,
+      shipping_info: shipping as unknown as Record<string, unknown>,
+      items: items as unknown as Record<string, unknown>,
+      payment_method: paymentMethod,
+    })
+    .select("id")
+    .single();
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ orderId: data.id as string });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  const orderId = data.id as string;
+  await notifyAfterOrderPlaced({
+    userId: user.id,
+    orderId,
+    total,
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/orders");
+  revalidatePath("/account/orders");
+
+  return NextResponse.json({ orderId });
 }

@@ -9,7 +9,7 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   card: "Debit / credit card (on delivery)",
 };
 
-/** All methods create a pending order; no payment gateway (Philippines, no Stripe). */
+/** Mock/offline: pending order + payment_method label only (GCash, COD, card on delivery). No gateway. */
 export const PAYMENT_METHOD_ORDER_STATUS_HINT: Record<
   PaymentMethod,
   "pending_offline"

@@ -1,9 +1,9 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Header } from "@/shared/components/layout/Header";
-import { Footer } from "@/shared/components/layout/Footer";
+import { AppChrome } from "@/shared/components/layout/AppChrome";
 import { Providers } from "@/app/providers";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/shared/lib/site";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -19,11 +19,10 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXTAUTH_URL ?? "http://localhost:3000"
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
   ),
-  title: "BayanMart — Shop online",
-  description:
-    "Philippines-friendly e-commerce demo — GCash, cash, and card on delivery.",
+  title: `${SITE_NAME} — Shop online`,
+  description: SITE_DESCRIPTION,
 };
 
 export default function RootLayout({
@@ -37,9 +36,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans antialiased`}
       >
         <Providers>
-          <Header />
-          <div className="flex-1">{children}</div>
-          <Footer />
+          <AppChrome>{children}</AppChrome>
         </Providers>
       </body>
     </html>

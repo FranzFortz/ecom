@@ -1,34 +1,32 @@
 // src/app/(account)/account/page.tsx
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { DashboardStats } from "@/features/account/components/DashboardStats";
 import { fetchOrdersForUser } from "@/features/account/hooks/useOrders";
 import { fetchWishlistForUser } from "@/features/account/hooks/useWishlist";
-import { auth } from "@/auth";
-import { createSupabaseServiceClient } from "@/shared/lib/supabase/service";
+import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
+import { SITE_NAME } from "@/shared/lib/site";
 
 export default async function AccountPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return null;
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth/login?callbackUrl=%2Faccount");
   }
 
-  const userId = session.user.id;
+  const userId = user.id;
   const [orders, wishlist, profile] = await Promise.all([
     fetchOrdersForUser(userId),
     fetchWishlistForUser(userId),
-    (async () => {
-      try {
-        const supabase = createSupabaseServiceClient();
-        const { data } = await supabase
-          .from("profiles")
-          .select("created_at, full_name")
-          .eq("id", userId)
-          .maybeSingle();
-        return data as { created_at: string; full_name: string | null } | null;
-      } catch {
-        return null;
-      }
-    })(),
+    supabase
+      .from("profiles")
+      .select("created_at, full_name")
+      .eq("id", userId)
+      .maybeSingle()
+      .then(({ data }) => data as { created_at: string; full_name: string | null } | null),
   ]);
 
   const totalSpent = orders
@@ -43,7 +41,7 @@ export default async function AccountPage() {
         Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}
       </h1>
       <p className="mt-1 text-sm text-stone-600">
-        Manage your orders and wishlist.
+        Your {SITE_NAME} account — orders and wishlist.
       </p>
       <div className="mt-8">
         <DashboardStats

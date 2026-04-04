@@ -1,15 +1,17 @@
 // src/app/(info)/about/page.tsx
 import Link from "next/link";
+import { SITE_NAME } from "@/shared/lib/site";
 
 export default function AboutPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-stone-900">About BayanMart</h1>
+      <h1 className="text-3xl font-bold text-stone-900">About {SITE_NAME}</h1>
       <div className="mt-6 space-y-4 text-sm leading-relaxed text-stone-700">
         <p>
-          BayanMart is a student-built e-commerce demo celebrating Filipino
-          makers and practical goods for everyday life — from barong-inspired
-          apparel to home accents and reliable electronics.
+          {SITE_NAME} is a student-built e-commerce demo focused on phones,
+          tablets, and tech accessories for everyday life in the Philippines —
+          transparent pricing, honest stock status, and familiar payment
+          options in this prototype.
         </p>
         <p>
           <strong className="text-stone-900">Mission:</strong> make it easy to

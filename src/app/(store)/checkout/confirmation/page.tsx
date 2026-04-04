@@ -1,12 +1,12 @@
 // src/app/(store)/checkout/confirmation/page.tsx
 import { notFound, redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { createSupabaseServiceClient } from "@/shared/lib/supabase/service";
+import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 import { formatPrice } from "@/shared/lib/utils";
 import type { CartItem } from "@/features/cart/types";
 import type { ShippingFormValues } from "@/features/checkout/types";
 import { PAYMENT_METHOD_LABELS } from "@/features/checkout/types";
 import type { OrderRow, PaymentMethod } from "@/shared/types";
+import { SITE_NAME } from "@/shared/lib/site";
 
 type SearchParams = { order_id?: string };
 
@@ -21,36 +21,29 @@ export default async function CheckoutConfirmationPage({
     notFound();
   }
 
-  const session = await auth();
-  if (!session?.user?.id) {
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
     redirect(
       `/auth/login?callbackUrl=${encodeURIComponent(`/checkout/confirmation?order_id=${orderId}`)}`
     );
   }
 
-  let order: OrderRow | null = null;
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("id", orderId)
+    .eq("user_id", user.id)
+    .maybeSingle();
 
-  try {
-    const supabase = createSupabaseServiceClient();
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("id", orderId)
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-
-    if (error || !data) {
-      notFound();
-    }
-    order = data as OrderRow;
-  } catch {
+  if (error || !data) {
     notFound();
   }
 
-  if (!order) {
-    notFound();
-  }
-
+  const order = data as OrderRow;
   const items = Array.isArray(order.items) ? (order.items as CartItem[]) : [];
   const shipping = order.shipping_info as ShippingFormValues;
   const pm = order.payment_method as PaymentMethod | null;
@@ -67,7 +60,8 @@ export default async function CheckoutConfirmationPage({
           <span className="font-mono text-stone-800">{order.id}</span>
         </p>
         <p className="mt-4 text-sm text-stone-600">
-          A confirmation email would be sent here (UI only for this project).
+          Thank you for shopping with {SITE_NAME}. A confirmation email would be
+          sent here (UI only for this project).
         </p>
       </div>
 

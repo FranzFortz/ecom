@@ -1,44 +1,45 @@
 // src/app/(account)/account/settings/page.tsx
+import { redirect } from "next/navigation";
 import { SettingsForm } from "@/features/account/components/SettingsForm";
-import { auth } from "@/auth";
-import { createSupabaseServiceClient } from "@/shared/lib/supabase/service";
+import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 import type { Json } from "@/shared/types";
 
 export default async function AccountSettingsPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return null;
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth/login?callbackUrl=%2Faccount%2Fsettings");
   }
 
+  const meta = user.user_metadata as { full_name?: string } | undefined;
   let profile: {
     full_name: string | null;
     email: string | null;
     phone: string | null;
     address: Json | null;
   } = {
-    full_name: session.user.name ?? null,
-    email: session.user.email ?? null,
+    full_name: meta?.full_name ?? user.email?.split("@")[0] ?? null,
+    email: user.email ?? null,
     phone: null,
     address: null,
   };
 
-  try {
-    const supabase = createSupabaseServiceClient();
-    const { data } = await supabase
-      .from("profiles")
-      .select("full_name, email, phone, address")
-      .eq("id", session.user.id)
-      .maybeSingle();
-    if (data) {
-      profile = {
-        full_name: (data.full_name as string | null) ?? profile.full_name,
-        email: (data.email as string | null) ?? profile.email,
-        phone: (data.phone as string | null) ?? null,
-        address: (data.address as Json | null) ?? null,
-      };
-    }
-  } catch {
-    /* use session fallback */
+  const { data } = await supabase
+    .from("profiles")
+    .select("full_name, email, phone, address")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (data) {
+    profile = {
+      full_name: (data.full_name as string | null) ?? profile.full_name,
+      email: (data.email as string | null) ?? profile.email,
+      phone: (data.phone as string | null) ?? null,
+      address: (data.address as Json | null) ?? null,
+    };
   }
 
   return (

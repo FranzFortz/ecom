@@ -1,5 +1,6 @@
 // src/features/account/components/OrderHistoryTable.tsx
 import Link from "next/link";
+import { DeleteOwnOrderButton } from "@/features/account/components/DeleteOwnOrderButton";
 import type { OrderRow } from "@/shared/types";
 import { Badge } from "@/shared/components/ui/Badge";
 import { formatPrice } from "@/shared/lib/utils";
@@ -9,8 +10,9 @@ function statusVariant(
   status: string
 ): "success" | "warning" | "error" | "neutral" {
   if (status === "paid" || status === "delivered") return "success";
-  if (status === "shipped") return "warning";
+  if (status === "shipped" || status === "processing") return "warning";
   if (status === "cancelled") return "error";
+  if (status === "pending") return "neutral";
   return "neutral";
 }
 
@@ -33,6 +35,7 @@ export function OrderHistoryTable({ orders }: { orders: OrderRow[] }) {
             <th className="px-4 py-3 font-medium text-stone-700">Status</th>
             <th className="px-4 py-3 font-medium text-stone-700">Items</th>
             <th className="px-4 py-3 font-medium text-stone-700">Total</th>
+            <th className="px-4 py-3 font-medium text-stone-700"> </th>
             <th className="px-4 py-3 font-medium text-stone-700"> </th>
           </tr>
         </thead>
@@ -61,6 +64,9 @@ export function OrderHistoryTable({ orders }: { orders: OrderRow[] }) {
                   >
                     View
                   </Link>
+                </td>
+                <td className="px-4 py-3">
+                  <DeleteOwnOrderButton orderId={o.id} />
                 </td>
               </tr>
             );

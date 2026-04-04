@@ -2,14 +2,16 @@
 "use client";
 
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useIsAdminSession } from "@/features/auth/hooks/useIsAdminSession";
+import { useSupabaseAuth } from "@/features/auth/context/SupabaseAuthContext";
 import { useCart } from "@/features/cart/context/CartContext";
 import { cn } from "@/shared/lib/utils";
 import { formatPrice } from "@/shared/lib/utils";
 
 export function CartSummary() {
   const { subtotal, itemCount } = useCart();
-  const { data: session } = useSession();
+  const { user } = useSupabaseAuth();
+  const isAdmin = useIsAdminSession(user);
   const shippingLabel = "Free";
   const shippingAmount = 0;
   const total = subtotal + shippingAmount;
@@ -37,18 +39,27 @@ export function CartSummary() {
         {itemCount} item{itemCount === 1 ? "" : "s"} — UI preview only until
         checkout is wired.
       </p>
-      <Link
-        href={
-          session?.user
-            ? "/checkout"
-            : "/auth/login?callbackUrl=%2Fcheckout"
-        }
-        className={cn(
-          "mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-700 px-4 text-sm font-medium text-white hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
-        )}
-      >
-        {session?.user ? "Proceed to checkout" : "Log in to checkout"}
-      </Link>
+      {isAdmin ? (
+        <Link
+          href="/admin/orders"
+          className={cn(
+            "mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-slate-600 bg-slate-800 px-4 text-sm font-medium text-slate-100 hover:bg-slate-700"
+          )}
+        >
+          Admins: manage orders in control center
+        </Link>
+      ) : (
+        <Link
+          href={
+            user ? "/checkout" : "/auth/login?callbackUrl=%2Fcheckout"
+          }
+          className={cn(
+            "mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-700 px-4 text-sm font-medium text-white hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+          )}
+        >
+          {user ? "Proceed to checkout" : "Log in to checkout"}
+        </Link>
+      )}
     </aside>
   );
 }

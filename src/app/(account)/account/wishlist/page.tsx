@@ -1,15 +1,16 @@
 // src/app/(account)/account/wishlist/page.tsx
+import { redirect } from "next/navigation";
 import { WishlistGrid } from "@/features/account/components/WishlistGrid";
 import { fetchWishlistForUser } from "@/features/account/hooks/useWishlist";
-import { auth } from "@/auth";
+import { getServerSupabaseUser } from "@/shared/lib/supabase/server-user";
 
 export default async function WishlistPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return null;
+  const user = await getServerSupabaseUser();
+  if (!user) {
+    redirect("/auth/login?callbackUrl=%2Faccount%2Fwishlist");
   }
 
-  const lines = await fetchWishlistForUser(session.user.id);
+  const lines = await fetchWishlistForUser(user.id);
 
   return (
     <main>

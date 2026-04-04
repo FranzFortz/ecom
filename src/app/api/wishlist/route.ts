@@ -1,11 +1,13 @@
 // src/app/api/wishlist/route.ts
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { createSupabaseServiceClient } from "@/shared/lib/supabase/service";
+import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -21,29 +23,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid productId" }, { status: 400 });
   }
 
-  try {
-    const supabase = createSupabaseServiceClient();
-    const { error } = await supabase.from("wishlist").insert({
-      user_id: session.user.id,
-      product_id: productId,
-    });
+  const { error } = await supabase.from("wishlist").insert({
+    user_id: user.id,
+    product_id: productId,
+  });
 
-    if (error) {
-      if (error.code === "23505") {
-        return NextResponse.json({ ok: true, duplicate: true });
-      }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    if (error.code === "23505") {
+      return NextResponse.json({ ok: true, duplicate: true });
     }
-    return NextResponse.json({ ok: true });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -53,20 +52,14 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Missing productId" }, { status: 400 });
   }
 
-  try {
-    const supabase = createSupabaseServiceClient();
-    const { error } = await supabase
-      .from("wishlist")
-      .delete()
-      .eq("user_id", session.user.id)
-      .eq("product_id", productId);
+  const { error } = await supabase
+    .from("wishlist")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("product_id", productId);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ ok: true });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
+  return NextResponse.json({ ok: true });
 }

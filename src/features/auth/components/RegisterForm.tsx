@@ -4,10 +4,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { signIn } from "@/features/auth/hooks/useAuth";
+import { resolvePostAuthLandingPath } from "@/features/auth/lib/admin-session-client";
 import { createSupabaseBrowserClient } from "@/shared/lib/supabase/browser";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
+import { SITE_NAME } from "@/shared/lib/site";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -58,16 +59,7 @@ export function RegisterForm() {
         );
       }
 
-      const nextAuth = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (nextAuth?.error) {
-        setError("Profile saved. Please log in manually.");
-        return;
-      }
-      router.push("/account");
+      router.push(await resolvePostAuthLandingPath("/account"));
       router.refresh();
     } catch {
       setError("Something went wrong. Try again.");
@@ -82,6 +74,7 @@ export function RegisterForm() {
       className="mx-auto flex max-w-md flex-col gap-4 rounded-xl border border-stone-200 bg-white p-6 shadow-sm"
     >
       <h1 className="text-xl font-semibold text-stone-900">Create account</h1>
+      <p className="text-sm text-stone-600">Join {SITE_NAME}</p>
       <Input
         label="Full name"
         name="fullName"

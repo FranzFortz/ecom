@@ -1,13 +1,13 @@
 // src/app/providers.tsx
 "use client";
 
-import { SessionProvider } from "next-auth/react";
+import { SupabaseAuthProvider } from "@/features/auth/context/SupabaseAuthContext";
 import { CartProvider } from "@/features/cart/context/CartContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <SupabaseAuthProvider>
       <CartProvider>{children}</CartProvider>
-    </SessionProvider>
+    </SupabaseAuthProvider>
   );
 }

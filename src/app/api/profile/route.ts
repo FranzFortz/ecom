@@ -1,12 +1,14 @@
 // src/app/api/profile/route.ts
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { createSupabaseServiceClient } from "@/shared/lib/supabase/service";
+import { createSupabaseServerClient } from "@/shared/lib/supabase/server";
 import type { Json } from "@/shared/types";
 
 export async function PATCH(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -38,19 +40,13 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "No valid fields" }, { status: 400 });
   }
 
-  try {
-    const supabase = createSupabaseServiceClient();
-    const { error } = await supabase
-      .from("profiles")
-      .update(updates)
-      .eq("id", session.user.id);
+  const { error } = await supabase
+    .from("profiles")
+    .update(updates)
+    .eq("id", user.id);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ ok: true });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
+  return NextResponse.json({ ok: true });
 }
